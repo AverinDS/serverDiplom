@@ -31,8 +31,12 @@ ALLOWED_HOSTS = ['185.246.64.174', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+
+    #mypages
+    'serverML',
 ]
 
 MIDDLEWARE = [
