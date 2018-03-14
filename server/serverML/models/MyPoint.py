@@ -3,8 +3,8 @@ from rest_framework import serializers
 
 
 class MyPoint(models.Model):
-    x = models.IntegerField(default=0)
-    y = models.IntegerField(default=0)
+    first = models.IntegerField(default=0) #x
+    second = models.IntegerField(default=0)#y
 
     class Meta:
         db_table = "point"
@@ -16,4 +16,4 @@ class MyPoint(models.Model):
 class PointSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyPoint
-        fields = ('x', 'y',)
+        fields = ('first', 'second',)

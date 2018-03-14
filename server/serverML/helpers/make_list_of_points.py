@@ -10,8 +10,8 @@ def make_list_of_points(x_predict, y_predict):
     list_of_points = []
     for i in range(len(x_predict)):
         point = MyPoint()
-        point.x = x_predict[i]
-        point.y = y_predict[i]
+        point.first = x_predict[i]
+        point.second = y_predict[i]
         list_of_points.append(point)
 
     return list_of_points
