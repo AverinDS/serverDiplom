@@ -1,14 +1,13 @@
-import json
-
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .ML.perceptron import MyPerceptron
-from .models.MyPoint import MyPoint
-import numpy as np
 from .models.MyPoint import PointSerializer as Serializer
+from .helpers.make_data_from_json import make_data_from_json
+from .helpers.prepare_x_predict import prepare_x_predict
+from .helpers.make_list_of_points import make_list_of_points
+from .helpers.get_gson_data import get_gson_data
 
-NAME_DATA = "points"
 
 
 def index(request):
@@ -19,25 +18,16 @@ def index(request):
 @csrf_exempt
 def perceptron(request):
 
-    json_data = json.loads(request.POST.get(NAME_DATA))  # getting form data
-    json_data = json_data[NAME_DATA]
+    json_data = get_gson_data(request)
+    x, y = make_data_from_json(json_data)
 
     perceptron_model = MyPerceptron()
-    x, y = perceptron_model.make_data_from_json(json_data)
-    perceptron_model.fitting_perceptron(x, y)
+    perceptron_model.fitting(x, y)
 
-    x_test = np.array([211, 220, 230, 240, 250]).reshape(-1, 1)
-    y_predict = perceptron_model.get_predict_perceptron(x_test)
+    x_predict = prepare_x_predict(int(max(x)))
+    y_predict = perceptron_model.get_predict(x_predict)
 
-    x_test = x_test.ravel()
-    y_predict = y_predict.ravel()
-
-    list_of_points = []
-    for i in range(len(x_test)):
-        point = MyPoint()
-        point.x = x_test[i]
-        point.y = y_predict[i]
-        list_of_points.append(point)
+    list_of_points = make_list_of_points(x_predict, y_predict)
 
     return JsonResponse(Serializer(list_of_points, many=True).data, safe=False)
 
