@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^linear$', controller.linear_regression, name='linear'),
     url(r'^mlpclassifier$', controller.mlp_classifier, name='mlpclassifier'),
     url(r'^mlpregressor$', controller.mlp_regressor, name='mlpregressor'),
+    url(r'^mynetwork$', controller.neyron_network, name='mynetwork'),
 ]

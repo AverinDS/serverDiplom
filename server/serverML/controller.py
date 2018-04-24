@@ -1,3 +1,4 @@
+import numpy
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -5,6 +6,7 @@ from .ML.perceptron import MyPerceptron
 from .ML.mlp_classifier import MyMlpClassifier
 from .ML.linear_regressor import MyLinearRegression
 from .ML.mlp_regressor import MyMLPRegressor
+from .ML.my_network import MyNetwork
 
 from .models.MyPoint import PointSerializer as Serializer
 from .helpers.make_data_from_json import make_data_from_json
@@ -80,6 +82,24 @@ def mlp_regressor(request):
     x_predict = prepare_x_predict(int(max(x)))
     y_predict = mlp_regr.get_predict(x_predict)
 
+    list_of_points = make_list_of_points(x_predict, y_predict)
+
+    return JsonResponse(Serializer(list_of_points, many=True).data, safe=False)
+
+
+# POST
+@csrf_exempt
+def neyron_network(request):
+    json_data = get_gson_data(request)
+    x, y = make_data_from_json(json_data)
+
+    network = MyNetwork()
+    network.make_model(len(x))
+    network.fit(x, y)
+    x_predict = prepare_x_predict(int(max(x)))
+    y_predict = network.predict(x_predict)
+    print(len(x_predict), len(y_predict))
+    x_predict = numpy.array([x_predict[i] for i in range(1, len(x_predict))])
     list_of_points = make_list_of_points(x_predict, y_predict)
 
     return JsonResponse(Serializer(list_of_points, many=True).data, safe=False)
