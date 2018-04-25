@@ -98,8 +98,10 @@ def neyron_network(request):
     network.fit(x, y)
     x_predict = prepare_x_predict(int(max(x)))
     y_predict = network.predict(x_predict)
-    print(len(x_predict), len(y_predict))
+    # print(len(x_predict), len(y_predict))
     x_predict = numpy.array([x_predict[i] for i in range(1, len(x_predict))])
+    print(len(x_predict))
+    print(len(y_predict))
     list_of_points = make_list_of_points(x_predict, y_predict)
 
     return JsonResponse(Serializer(list_of_points, many=True).data, safe=False)

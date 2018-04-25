@@ -16,6 +16,7 @@ class MyNetwork:
     scaler = MinMaxScaler(feature_range=(0, 1))
 
     def make_model(self, length_of_units):
+        self.model = Sequential()
         self.max_length = length_of_units
 
         self.model.add(LSTM(4, input_shape=(1, self.look_back)))
