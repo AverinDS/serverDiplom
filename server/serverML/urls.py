@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^mlpclassifier$', controller.mlp_classifier, name='mlpclassifier'),
     url(r'^mlpregressor$', controller.mlp_regressor, name='mlpregressor'),
     url(r'^mynetwork$', controller.neyron_network, name='mynetwork'),
+    url(r'^fblib$', controller.fb_lib, name='fblib'),
 ]
