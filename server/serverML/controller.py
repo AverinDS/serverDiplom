@@ -14,6 +14,7 @@ from .helpers.make_data_from_json import make_data_from_json
 from .helpers.prepare_x_predict import prepare_x_predict
 from .helpers.make_list_of_points import make_list_of_points
 from .helpers.get_gson_data import get_gson_data
+from .helpers.rolling import RollingHelper
 
 
 def index(request):
@@ -25,6 +26,9 @@ def index(request):
 def perceptron(request):
     json_data = get_gson_data(request)
     x, y = make_data_from_json(json_data)
+
+    rollingHelper = RollingHelper()
+    y = rollingHelper.rolling_mean(y)
 
     perceptron_model = MyPerceptron()
     perceptron_model.fitting(x, y)
@@ -43,6 +47,9 @@ def mlp_classifier(request):
     json_data = get_gson_data(request)
     x, y = make_data_from_json(json_data)
 
+    rollingHelper = RollingHelper()
+    y = rollingHelper.rolling_mean(y)
+
     my_classifier = MyMlpClassifier()
     my_classifier.fitting(x, y)
 
@@ -59,6 +66,9 @@ def mlp_classifier(request):
 def linear_regression(request):
     json_data = get_gson_data(request)
     x, y = make_data_from_json(json_data)
+
+    rollingHelper = RollingHelper()
+    y = rollingHelper.rolling_mean(y)
 
     my_linear_regr = MyLinearRegression()
     my_linear_regr.fitting(x, y)
@@ -77,6 +87,9 @@ def mlp_regressor(request):
     json_data = get_gson_data(request)
     x, y = make_data_from_json(json_data)
 
+    rollingHelper = RollingHelper()
+    y = rollingHelper.rolling_mean(y)
+
     mlp_regr = MyMLPRegressor()
     mlp_regr.fitting(x, y)
 
@@ -93,6 +106,9 @@ def mlp_regressor(request):
 def neyron_network(request):
     json_data = get_gson_data(request)
     x, y = make_data_from_json(json_data)
+
+    rollingHelper = RollingHelper()
+    y = rollingHelper.rolling_mean(y)
 
     network = MyNetwork()
     network.make_model(len(x))
@@ -112,6 +128,9 @@ def neyron_network(request):
 def fb_lib(request):
     json_data = get_gson_data(request)
     x, y = make_data_from_json(json_data)
+
+    rollingHelper = RollingHelper()
+    y = rollingHelper.rolling_mean(y)
 
     fb = FbLib()
     fb.make_model()
