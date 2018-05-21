@@ -1,74 +1,82 @@
-import numpy
+import numpy as np
+import pandas as pd
+from keras.callbacks import EarlyStopping
 from keras.models import Sequential
-from keras.layers import Dense, LSTM
-import keras
+from keras.layers import Dense, LSTM, BatchNormalization, LeakyReLU, Activation
 from sklearn.preprocessing import MinMaxScaler
 
 
 class MyNetwork:
     model = Sequential()
-    max_length = 0
-    look_back = 10
-    y_train = numpy.array([])
-    x_train = numpy.array([])
-    x_train_list = []
-    y_train_list = []
-    scaler = MinMaxScaler(feature_range=(0, 1))
+    input_dim_val = 50
+    max_x = 1
+    dataframe = pd.DataFrame()
 
-    def make_model(self, length_of_units):
+    early_stopping = EarlyStopping(monitor='loss', patience=50, mode='auto')
+
+    def make_model(self):
         self.model = Sequential()
-        self.max_length = length_of_units
 
-        self.model.add(LSTM(4, input_shape=(1, self.look_back)))
-        self.model.add(Dense(1, activation='relu'))
-        # self.model.add(Dense(12, input_shape=(1,)))
-        # self.model.add(Dense(15, activation='relu'))
-        # self.model.add(Dense(8, activation='relu'))
-        # self.model.add(Dense(10, activation='relu'))
-        # self.model.add(Dense(1, activation='sigmoid'))
+        self.model = Sequential()
+        self.model.add(Dense(64, input_dim=self.input_dim_val))
+        self.model.add(BatchNormalization())
+        self.model.add(LeakyReLU())
+        self.model.add(Dense(16))
+        self.model.add(BatchNormalization())
+        self.model.add(LeakyReLU())
+        self.model.add(Dense(1))
+        self.model.add(Activation('linear'))
+        self.model.compile(optimizer='Adadelta', loss='mean_squared_error')
 
-        self.model.compile(loss="mean_squared_error", optimizer="adam")
+
 
     def fit(self, X, Y):
-        X, Y = self.make_dataset(X, Y)
-        X = numpy.reshape(X, (X.shape[0], 1, X.shape[1]))
-        print(X)
+        self.dataframe = pd.DataFrame({'x': X.ravel(), 'y': Y.ravel()})
+        x_train = self.make_dataset_x(self.dataframe['x'], self.input_dim_val)
+        y_train = self.make_dataset_y(self.dataframe['y'], self.input_dim_val)
+        self.dataframe['y'] = self.dataframe['y'].rolling(int(len(Y) / 30), win_type=None, min_periods=1).mean()
+        self.max_x = max(self.dataframe['x'])
+        self.model.fit(x_train, y_train, epochs=200, callbacks=[self.early_stopping])
+        print("FITTING COMPLETE!")
 
-        Y = self.scaler.fit_transform(Y.reshape(-1, 1))
 
-        print (Y)
-        self.model.fit(X, Y, epochs=50)
+    def predict(self):
+        x_test = self.makePredictDataset(self.dataframe['x'],
+                                         [i for i in range(self.max_x, self.max_x + 3 * self.input_dim_val)])
+        x_test_one_dataset = x_test
 
-    def predict(self, X):
-        predict_points = self.model.predict(self.make_dataset_X(X))
-        predict_points = self.scaler.inverse_transform(predict_points)
-        print(predict_points)
-        return predict_points
+        x_test = self.make_dataset_x(x_test, self.input_dim_val)
+        y_predict = self.model.predict(x_test)
+        return np.array(x_test_one_dataset[:len(y_predict)]), np.array(y_predict)
 
-    def make_dataset(self, X, Y):
-        self.x_train_list = X
-        self.y_train_list = Y
 
-        dataX, dataY = [], []
 
-        for i in range(len(X) - self.look_back - 1):
-            dataX.append(X[i:(i + self.look_back), 0])
-            dataY.append(Y[i + self.look_back, 0])
-        self.y_train = numpy.array(dataY)
-        self.x_train = numpy.array(dataX)
-        return numpy.array(dataX), numpy.array(dataY)
 
-    def make_dataset_X(self, X):
-        dataX = []
-        for i in range(self.look_back,0, -1):
-            dataX.append(self.x_train[len(self.x_train)-1 - i])
+    def make_dataset_x(self, x, size):
+        new_dataset = []
+        checkNotEnough = False
+        for i in range(len(x) - 1, 0, -1):
+            temp = []
+            for j in range(size):
+                if (i - j) >= 0:
+                    temp.append(x[i - j])
+                else:
+                    checkNotEnough = True
+                    break
+            if not checkNotEnough:
+                new_dataset.append(temp)
 
-        for i in range(len(X) - self.look_back - 1):
-            dataX.append(X[i:(i + self.look_back), 0])
+            new_dataset.reverse()
+        return np.array(new_dataset)
 
-        dataX = numpy.array(dataX)
-        # print(dataX)
-        dataX = numpy.reshape(dataX, (dataX.shape[0], 1, dataX.shape[1]))
-        # print(dataX)
-        return dataX
+    def make_dataset_y(self, y, size):
+        return np.array(y[size - 1:])
+
+    def makePredictDataset(self, x, x1):
+        data = []
+        for i in x:
+            data.append(i)
+        for i in x1:
+            data.append(i)
+        return data
 
