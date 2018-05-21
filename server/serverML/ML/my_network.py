@@ -12,7 +12,7 @@ class MyNetwork:
     max_x = 1
     dataframe = pd.DataFrame()
 
-    early_stopping = EarlyStopping(monitor='loss', patience=50, mode='auto')
+    early_stopping = EarlyStopping(monitor='loss', patience=100, mode='auto')
 
     def make_model(self):
         self.model = Sequential()
@@ -41,7 +41,9 @@ class MyNetwork:
 
 
     def predict(self):
-        x_test = self.makePredictDataset(self.dataframe['x'],
+        # x_test = self.makePredictDataset(self.dataframe['x'],
+        #                                  [i for i in range(self.max_x, self.max_x + 3 * self.input_dim_val)])
+        x_test = self.makePredictDataset([],
                                          [i for i in range(self.max_x, self.max_x + 3 * self.input_dim_val)])
         x_test_one_dataset = x_test
 
