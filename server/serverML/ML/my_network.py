@@ -10,6 +10,7 @@ from ..helpers.rolling import RollingHelper
 class MyNetwork:
     model = Sequential()
     input_dim_val = 20
+    countOfpredict = 500
     max_x = 1
     dataframe = pd.DataFrame()
     rolling = RollingHelper()
@@ -49,9 +50,9 @@ class MyNetwork:
 
     def predict(self):
         x_test = self.makePredictDataset(self.dataframe['x'],
-                                         [i for i in range(self.max_x, self.max_x + 3 * self.input_dim_val)])
+                                         [i for i in range(self.max_x, self.max_x + self.countOfpredict)])
         # x_test = self.makePredictDataset([],
-        #                                  [i for i in range(self.max_x, self.max_x + 3 * self.input_dim_val)])
+        #                                  [i for i in range(self.max_x, self.max_x + self.countOfpredict)])
         x_test_one_dataset = x_test
 
         x_test = self.make_dataset_x(x_test, self.input_dim_val)
