@@ -4,13 +4,15 @@ from keras.callbacks import EarlyStopping
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, BatchNormalization, LeakyReLU, Activation
 from sklearn.preprocessing import MinMaxScaler
+from ..helpers.rolling import RollingHelper
 
 
 class MyNetwork:
     model = Sequential()
-    input_dim_val = 50
+    input_dim_val = 20
     max_x = 1
     dataframe = pd.DataFrame()
+    rolling = RollingHelper()
 
     early_stopping = EarlyStopping(monitor='loss', patience=100, mode='auto')
 
@@ -34,22 +36,28 @@ class MyNetwork:
         self.dataframe = pd.DataFrame({'x': X.ravel(), 'y': Y.ravel()})
         x_train = self.make_dataset_x(self.dataframe['x'], self.input_dim_val)
         y_train = self.make_dataset_y(self.dataframe['y'], self.input_dim_val)
-        self.dataframe['y'] = self.dataframe['y'].rolling(int(len(Y) / 30), win_type=None, min_periods=1).mean()
+
+        yT = self.rolling.double_exponential_smoothing(self.dataframe['y'], 0.02, 0.05)
+        yT.remove(yT[0])
+        self.dataframe['y'] = yT
+
         self.max_x = max(self.dataframe['x'])
         self.model.fit(x_train, y_train, epochs=200, callbacks=[self.early_stopping])
+        # self.model.fit(x_train, y_train, epochs=200cd se)
         print("FITTING COMPLETE!")
 
 
     def predict(self):
-        # x_test = self.makePredictDataset(self.dataframe['x'],
-        #                                  [i for i in range(self.max_x, self.max_x + 3 * self.input_dim_val)])
-        x_test = self.makePredictDataset([],
+        x_test = self.makePredictDataset(self.dataframe['x'],
                                          [i for i in range(self.max_x, self.max_x + 3 * self.input_dim_val)])
+        # x_test = self.makePredictDataset([],
+        #                                  [i for i in range(self.max_x, self.max_x + 3 * self.input_dim_val)])
         x_test_one_dataset = x_test
 
         x_test = self.make_dataset_x(x_test, self.input_dim_val)
         y_predict = self.model.predict(x_test)
-        return np.array(x_test_one_dataset[:len(y_predict)]), np.array(y_predict)
+        xP = [i for i in x_test_one_dataset if i > self.max_x]
+        return np.array(xP), np.array(y_predict[:len(xP)])
 
 
 
